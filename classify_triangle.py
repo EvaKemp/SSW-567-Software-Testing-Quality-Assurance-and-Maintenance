@@ -1,56 +1,68 @@
-# classify_triangle.py
+"""
+Triangle classification module for SSW-567.
 
+This module provides a single function, classify_triangle(), which classifies a
+triangle based on three side lengths.
+"""
+
+from __future__ import annotations
+
+import math
 from typing import Union
 
 Number = Union[int, float]
 
 
-def classify_triangle(a: Number, b: Number, c: Number) -> str:
+def classify_triangle(side_a: Number, side_b: Number, side_c: Number) -> str:
     """
     Classify a triangle by side lengths.
+
     Returns one of:
       - "equilateral"
       - "isosceles"
       - "scalene"
-    and appends " right" if it is also a right triangle, e.g. "isosceles right".
+    and appends " right" if it is also a right triangle (e.g., "scalene right").
 
     If inputs are invalid or do not form a triangle, returns:
-      - "not a triangle"
-      - "invalid"
+      - "invalid"          (non-numeric or <= 0)
+      - "not a triangle"   (fails triangle inequality)
     """
-
-    # Validate types and values
-    for x in (a, b, c):
-        if not isinstance(x, (int, float)):
+    for side in (side_a, side_b, side_c):
+        if not isinstance(side, (int, float)):
             return "invalid"
-        if x <= 0:
+        if side <= 0:
             return "invalid"
 
-    # Triangle inequality (sort so largest is last)
-    sides = sorted([a, b, c])
-    x, y, z = sides  # z is largest
+    sorted_sides = sorted((float(side_a), float(side_b), float(side_c)))
+    small_side, mid_side, large_side = sorted_sides
 
-    if x + y <= z:
+    if small_side + mid_side <= large_side:
         return "not a triangle"
 
-    # Determine basic type
-    if a == b == c:
-        tri_type = "equilateral"
-    elif a == b or b == c or a == c:
-        tri_type = "isosceles"
+    tolerance = 1e-9
+
+    ab_equal = math.isclose(side_a, side_b, abs_tol=tolerance)
+    bc_equal = math.isclose(side_b, side_c, abs_tol=tolerance)
+    ac_equal = math.isclose(side_a, side_c, abs_tol=tolerance)
+
+    if ab_equal and bc_equal:
+        triangle_type = "equilateral"
+    elif ab_equal or bc_equal or ac_equal:
+        triangle_type = "isosceles"
     else:
-        tri_type = "scalene"
+        triangle_type = "scalene"
 
-    # Right triangle check: x^2 + y^2 == z^2 (use tolerance for floats)
-    # Use a small tolerance in case of float inputs
-    tol = 1e-9
-    is_right = abs((x * x + y * y) - (z * z)) <= tol
+    is_right = math.isclose(
+        small_side * small_side + mid_side * mid_side,
+        large_side * large_side,
+        abs_tol=tolerance,
+    )
 
-    return f"{tri_type} right" if is_right else tri_type
+    return f"{triangle_type} right" if is_right else triangle_type
 
 
-def main():
-    # Simple demo runs (counts for your "input/output screenshot" deliverable)
+def main() -> None:
+    """Run a small demo of triangle classifications."""
     samples = [
         (3, 4, 5),
         (2, 2, 3),
@@ -59,9 +71,12 @@ def main():
         (-1, 2, 2),
         (1.5, 2.0, 2.5),
     ]
-    for a, b, c in samples:
-        print(f"{(a, b, c)} -> {classify_triangle(a, b, c)}")
+
+    for side_a, side_b, side_c in samples:
+        result = classify_triangle(side_a, side_b, side_c)
+        print(f"{(side_a, side_b, side_c)} -> {result}")
 
 
 if __name__ == "__main__":
     main()
+    
