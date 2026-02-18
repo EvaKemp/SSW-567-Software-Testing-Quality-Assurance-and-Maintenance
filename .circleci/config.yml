@@ -1,0 +1,24 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: cimg/python:3.13
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install -r GitHubApi567_hw4a/requirements.txt
+      - run:
+          name: Run unit tests (HW03b_Mocking)
+          command: |
+            python -m unittest discover -s GitHubApi567_hw4a -p "test_*.py" -v
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - test
